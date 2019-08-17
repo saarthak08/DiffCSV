@@ -1,0 +1,146 @@
+<!doctype html>
+
+<html>
+
+<head>
+
+<title>Python Flask CSV Comparision</title>
+
+</head>
+
+<body style="background-color:#E0FFFF;">
+
+ 
+
+<h1 style="text-align:center;color:#e67e22">CSV Comparision Project</h1>
+
+ 
+
+<h2>Select a file to upload</h2>
+
+ 
+
+ 
+
+<p>
+
+ 
+
+              {% with messages = get_flashed_messages() %}
+
+ 
+
+                {% if messages %}
+
+ 
+
+                             <ul class=flashes>
+
+ 
+
+                             {% for message in messages %}
+
+ 
+
+                               <li>{{ message }}</li>
+
+ 
+
+                             {% endfor %}
+
+ 
+
+                             </ul>
+
+ 
+
+                {% endif %}
+
+ 
+
+              {% endwith %}
+
+ 
+
+</p>
+
+ 
+
+<form method="post" action="/" enctype="multipart/form-data">
+
+ 
+
+    <dl>
+
+                    <h5>Choose Files</h5>
+
+                             <p>
+
+ 
+
+                                           <input type="file" name="files[]" autocomplete="off" required>
+
+ 
+
+                             </p>
+
+                               <p>
+
+ 
+
+                                           <input type="file" name="files[]" autocomplete="off" required>
+
+ 
+
+                             </p>
+
+ 
+
+    </dl>
+
+ 
+
+    <br>
+
+    <p>
+
+ 
+
+                             <input type="submit" value="Submit Files">
+
+ 
+
+              </p>
+
+ 
+
+</form>
+
+ 
+
+<br>
+
+<br>
+
+
+ 
+
+<a href="/compare" >Click here to compare the two files.</a>
+
+<br><br>
+
+<a href="/download" >Click here to download the diff file! </a> 
+
+<br>
+
+<br>
+
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Ericsson_logo.svg/768px-Ericsson_logo.svg.png" style="width:100px;height:100px;">
+
+ 
+
+</body>
+
+ 
+
+</html>
