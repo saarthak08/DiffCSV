@@ -1,6 +1,5 @@
 import os
 
-#import magic
 
 import urllib.request
 
@@ -14,7 +13,7 @@ import csv
 
  
 
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'csv'])
+ALLOWED_EXTENSIONS = set(['csv'])
 
 
 def allowed_file(filename):
@@ -50,8 +49,6 @@ def upload_file():
 
               if request.method == 'POST':
 
-        # check if the post request has the file part
-
                              if 'files[]' not in request.files:
 
                                            flash('No file part')
@@ -73,7 +70,7 @@ def upload_file():
                                      
                                      if file.filename == '':
                                  
-                                        flash('No file selected for uploading')
+                                        flash('No file selected for uploading.')
                                      
                                         redirect(request.url)
                                      
@@ -89,7 +86,7 @@ def upload_file():
                                         file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
                                      else:
-                                        flash('Allowed file types are txt, pdf, png, jpg, jpeg, gif, csv')
+                                        flash('Allowed file type is csv only.')
                                       
                                         return redirect(request.url)
                                
