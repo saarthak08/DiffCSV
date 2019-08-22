@@ -10,7 +10,7 @@ from flask import Flask, flash, request, redirect, render_template, session, sen
 
 from werkzeug.utils import secure_filename
 
-#from csv import comp
+import csv
 
  
 
@@ -28,10 +28,12 @@ def compare_filenames(filenames):
          
 @app.route('/download', methods=['POST','GET'])
 def download_file(): 
+        
     try:
-        return send_file(app.config['UPLOAD_FOLDER']+'update.csv',attachment_filename='update.csv',as_attachment=True)
+        return send_file(app.config['UPLOAD_FOLDER']+'update.csv',attachment_filename='update.csv',as_attachment=True, cache_timeout=0)
     except:
         flash('update.csv file not found at '+app.config['UPLOAD_FOLDER'])
+        return redirect('/')
 
 
 @app.route('/')
@@ -122,25 +124,60 @@ def comp_file():
         fileone = t1.readlines()
 
         filetwo = t2.readlines()
-
+        
         t1.close()
 
         t2.close()
+    
+
 
         outFile = open('update.'+filenames[0].rsplit('.',1)[1].lower(), 'w')
+        outFile.write(" S.No. ,    Differences (COLUMN_NAME)    ,")
         
-        x = 0
         
-        for i in fileone:
+        for row in fileone[:1]:
+            for col in row: 
+                outFile.write(col), 
             
-            if i != filetwo[x]:
+      #  for i in fileone:
 
-                outFile.write(filetwo[x])
+ #           if i != filetwo[x]:
 
-            x += 1
+  #              outFile.write(filetwo[x])
 
-        outFile.close()
+   #         x += 1       
+       
+    #    outFile.close()
+    
+    
+        x = 0
+        rows_one = [] 
+        rows_two = [] 
+        with open(filenames[0]) as csvone:
+            csvreader_one=csv.reader(csvone)
+            for row in csvreader_one:
+                rows_one.append(row)
+
+        with open(filenames[1]) as csvtwo:
+            csvreader_two=csv.reader(csvtwo)
+            for row in csvreader_two:
+                rows_two.append(row)
+                
         
+        for i in range(0,len(rows_one)):
+            if(rows_one[i]!=rows_two[x]):
+                y=0
+                for col in rows_one[i]:
+                    if col!=rows_two[x][y]:
+                        outFile.write(str(x)+",")
+                        outFile.write(col+" ("+rows_one[0][y]+"),")
+                        outFile.write(fileone[x])
+                        outFile.write(str(x)+",")
+                        outFile.write(rows_two[x][y]+" ("+rows_one[0][y]+"),")
+                        outFile.write(filetwo[x]+"\n")
+                    y+=1
+            x+=1
+      
         if len(filenames)==2:
             flash('Files Compared Successfully')
             session['filenames']=None
@@ -157,7 +194,7 @@ def comp_file():
 
 if __name__ == "__main__":
 
-    app.run(port=4000)
+    app.run()
 
    
 

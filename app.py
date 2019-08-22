@@ -8,8 +8,6 @@ UPLOAD_FOLDER = '/Users/saarthak08/Downloads/'
 
 app = Flask(__name__)
 
-app.debug=True
-
 app.secret_key = "secret key"
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
