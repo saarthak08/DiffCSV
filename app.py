@@ -1,15 +1,17 @@
 from flask import Flask
+import os
 
- 
+cwd = os.getcwd()
 
-UPLOAD_FOLDER = '/Users/saarthak08/Downloads/'
+FILES_FOLDER = os.path.join(cwd,'files')
 
- 
+if not os.path.exists(FILES_FOLDER):
+    os.mkdir(FILES_FOLDER)
 
 app = Flask(__name__)
 
 app.secret_key = "secret key"
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['FILES_FOLDER'] = FILES_FOLDER
 
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
