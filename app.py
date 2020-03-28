@@ -1,11 +1,16 @@
-from flask import Flask
 import os
+import shutil
+
+from flask import Flask
 
 cwd = os.getcwd()
 
-FILES_FOLDER = os.path.join(cwd,'files')
+FILES_FOLDER = os.path.join(cwd, 'files')
 
-if not os.path.exists(FILES_FOLDER):
+if os.path.exists(FILES_FOLDER):
+    shutil.rmtree(FILES_FOLDER)
+    os.mkdir(FILES_FOLDER)
+else:
     os.mkdir(FILES_FOLDER)
 
 app = Flask(__name__)

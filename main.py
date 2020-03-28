@@ -1,8 +1,9 @@
 import os
+import shutil
 
 from app import app
 
-from flask import Flask, flash, request, redirect, render_template, session, send_file
+from flask import flash, request, redirect, render_template, session, send_file
 
 from werkzeug.utils import secure_filename
 
@@ -11,6 +12,14 @@ import csv
 ALLOWED_EXTENSIONS = set(['csv'])
 
 filenames = []
+
+
+def recreate_dir():
+    if os.path.exists(app.config['FILES_FOLDER']):
+        shutil.rmtree(app.config['FILES_FOLDER'])
+        os.mkdir(app.config['FILES_FOLDER'])
+    else:
+        os.mkdir(app.config['FILES_FOLDER'])
 
 
 def allowed_file(filename):
@@ -40,6 +49,8 @@ def upload_form():
 def upload_file():
     global filenames
 
+    filenames = []
+
     if request.method == 'POST':
 
         if 'files[]' not in request.files:
@@ -67,9 +78,11 @@ def upload_file():
                 filenames.append(file.filename)
 
             if len(filenames) == 2 and compare_filenames(filenames):
+                recreate_dir()
+
                 i = 0
                 for file in files:
-                    file.save(os.path.join(app.config['FILES_FOLDER'], filenames[i]))
+                    file.save(os.path.join(app.config['FILES_FOLDER'], 'input('+str(i+1)+')-'+filenames[i]+'.csv'))
                     i += 1
 
                 flash('Files successfully uploaded at ' + app.config['FILES_FOLDER'])
@@ -135,7 +148,7 @@ def comp_file():
             x += 1
 
         if len(filenames) == 2:
-            flash('Files Compared Successfully')
+            flash('Files compared successfully.\n The \'result.csv\' file is stored at '+app.config['FILES_FOLDER'])
             session['filenames'] = None
 
     else:
@@ -146,4 +159,4 @@ def comp_file():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
