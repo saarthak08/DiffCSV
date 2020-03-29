@@ -105,137 +105,140 @@ def comp_file():
 
         t2 = open(filenames[1], 'r')
 
-        fileone = t1.readlines()
+        file_one = t1.readlines()
 
-        filetwo = t2.readlines()
+        file_two = t2.readlines()
 
         t1.close()
 
         t2.close()
 
-        outFile = open('result.' + filenames[0].rsplit('.', 1)[1].lower(), 'w')
-        notPresentFile2 = open("entries-not-present-in-input-1-but-present-in-input-2."+filenames[0].rsplit('.', 1)[1].lower(), 'w')
-        notPresentFile1 = open("entries-not-present-in-input-2-but-present-in-input-1."+filenames[0].rsplit('.', 1)[1].lower(), 'w')
+        out_file = open('result.' + filenames[0].rsplit('.', 1)[1].lower(), 'w')
 
-        file_one_array = []
-        file_two_array = []
-        columns = []
+        file_one_id_set = set()
+        file_two_id_set = set()
+        file_one_dictionary = {}
+        file_two_dictionary = {}
+        file_one_columns_set = set()
+        file_two_columns_set = set()
+        total_columns = set()
+        total_ids = set()
+        columns_intersection = set()
+        primary_index_one = ""
+        primary_index_two = ""
+        file_one_columns_array = []
+        file_two_columns_array = []
 
-        with open(filenames[0]) as csvone:
-            csvreader_one = csv.reader(csvone)
-            for row in csvreader_one:
-                file_one_array.append(row)
+        with open(filenames[0]) as csv_one:
+            csv_reader_one = csv.reader(csv_one)
+            i = 0
+            for row in csv_reader_one:
+                if i == 0:
+                    for column in range(len(row)):
+                        if column == 0:
+                            primary_index_one = row[column]
+                        else:
+                            file_one_columns_array.append(row[column])
+                            file_one_columns_set.add(row[column])
+                else:
+                    file_one_id_set.add(row[0])
+                    temp_dict = {}
+                    for column in range(len(row)):
+                        if column != 0:
+                            temp_dict[file_one_columns_array[column-1]] = row[column]
+                    file_one_dictionary[row[0]] = temp_dict
+                i += 1
 
-        with open(filenames[1]) as csvtwo:
-            csvreader_two = csv.reader(csvtwo)
-            for row in csvreader_two:
-                file_two_array.append(row)
+        with open(filenames[1]) as csv_two:
+            csv_reader_two = csv.reader(csv_two)
+            i = 0
+            for row in csv_reader_two:
+                if i == 0:
+                    for column in range(len(row)):
+                        if column == 0:
+                            primary_index_two = row[column]
+                        else:
+                            file_two_columns_set.add(row[column])
+                            file_two_columns_array.append(row[column])
+                else:
+                    file_two_id_set.add(row[0])
+                temp_dict = {}
+                for column in range(len(row)):
+                    if column != 0:
+                        temp_dict[file_two_columns_array[column - 1]] = row[column]
+                file_two_dictionary[row[0]] = temp_dict
+                i += 1
 
-        outFile.write("   "+file_one_array[0][0] + "   ,    Differences (COLUMN_NAME)    ")
-        notPresentFile2.write("   "+file_one_array[0][0] + "   ,    Differences (COLUMN_NAME)    ")
-        notPresentFile1.write("   "+file_one_array[0][0] + "   ,    Differences (COLUMN_NAME)    ")
+        total_columns = file_one_columns_set.union(file_two_columns_set)
+        total_ids = file_one_id_set.union(file_two_id_set)
+        total_ids_array = sorted(total_ids)
+        total_ids_array = list(map(int, total_ids_array))
+        total_ids_array.sort()
+        total_ids_array = list(map(str, total_ids_array))
+        columns_intersection = file_one_columns_set.intersection(file_two_columns_set)
 
+        out_file.write(" Input File ,"+"   "   + primary_index_one +   "   ,    Differences (COLUMN_NAME)    ")
 
-        for col_one in file_one_array[0][1:]:
-            for col_two in file_two_array[0][1:]:
-                if col_one == col_two:
-                    columns.append(col_one)
-                    outFile.write(","+col_one)
-                    notPresentFile2.write(","+col_one)
-                    notPresentFile1.write(","+col_one)
+        for col in total_columns:
+            out_file.write("," + col)
 
-        outFile.write("\n")
-        notPresentFile2.write("\n")
-        notPresentFile1.write("\n")
-
-
-        matched_column = None
-        flag = False
-        flag2 = False
-
-        for i in range(1, len(file_one_array)):
-            flag = False
-            for j in range(1, len(file_two_array)):
-                if file_one_array[i][0] == file_two_array[j][0]:
-                    flag = True
-                    for x in range(len(file_one_array[0])):
-                        for y in range(len(file_two_array[0])):
-                            if file_one_array[0][x] == file_two_array[0][y]:
-                                matched_column = file_one_array[0][x]
-                                break
+        out_file.write("\n")
+        for temp_id in total_ids_array:
+            if file_one_id_set.__contains__(temp_id) and file_two_id_set.__contains__(temp_id):
+                for temp_column in columns_intersection:
+                    if file_one_dictionary.get(temp_id).get(temp_column) != file_two_dictionary.get(temp_id).get(temp_column):
+                        out_file.write(" INPUT-1 ," +temp_id + ",")
+                        out_file.write(file_one_dictionary.get(temp_id).get(temp_column) + " (" + temp_column + ")")
+                        for col in total_columns:
+                            if file_one_columns_set.__contains__(col):
+                                out_file.write("," + file_one_dictionary.get(temp_id).get(col))
                             else:
-                                matched_column = None
-                        if matched_column is not None:
-                            if file_one_array[i][x] != file_two_array[j][y]:
-                                outFile.write(file_one_array[i][0]+",")
-                                outFile.write(file_one_array[i][x]+" ("+matched_column+")")
-                                for col in range(1, len(file_one_array[0])):
-                                    for col2 in range(len(columns)):
-                                        if file_one_array[0][col] == columns[col2]:
-                                            outFile.write(","+file_one_array[i][col])
-                                outFile.write("\n"+file_two_array[j][0]+",")
-                                outFile.write(file_two_array[j][y]+" ("+matched_column+")")
-                                for col in range(len(file_two_array[0])):
-                                    for col2 in range(len(columns)):
-                                        if file_two_array[0][col] == columns[col2]:
-                                            outFile.write(","+file_two_array[j][col])
-                                outFile.write("\n")
-                    outFile.write("\n")
-            if not flag:
-                notPresentFile1.write(file_one_array[i][0] + ",")
-                notPresentFile1.write(" PRESENT ")
-                for col in range(1, len(file_one_array[0])):
-                    for col2 in range(len(columns)):
-                        if file_one_array[0][col] == columns[col2]:
-                            notPresentFile1.write("," + file_one_array[i][col])
-                notPresentFile1.write("\n" + file_one_array[i][0] + ",")
-                notPresentFile1.write(" NOT PRESENT ")
-                for col in range(len(file_two_array[0])):
-                    for col2 in range(len(columns)):
-                        if file_two_array[0][col] == columns[col2]:
-                            notPresentFile1.write(", NOT PRESENT ")
-                notPresentFile1.write("\n\n")
-
-
-        for p in range(1, len(file_two_array)):
-            flag2 = False
-            for q in range(1, len(file_one_array)):
-                if file_two_array[p][0] == file_one_array[q][0]:
-                    flag2 = True
-            if not flag2:
-                notPresentFile2.write(file_two_array[p][0] + ",")
-                notPresentFile2.write(" NOT PRESENT ")
-                for col in range(1, len(file_one_array[0])):
-                    for col2 in range(len(columns)):
-                        if file_one_array[0][col] == columns[col2]:
-                            notPresentFile2.write("," + " NOT PRESENT")
-                notPresentFile2.write("\n" + file_two_array[p][0] + ",")
-                notPresentFile2.write(" PRESENT ")
-                for col in range(len(file_two_array[0])):
-                    for col2 in range(len(columns)):
-                        if file_two_array[0][col] == columns[col2]:
-                            notPresentFile2.write("," + file_two_array[p][col])
-                notPresentFile2.write("\n\n")
-
-
-        """
-        for i in range(0, len(file_one_array)):
-            if file_one_array[i] != file_two_array[x]:
-                y = 0
-                for col in file_one_array[i]:
-                    if col != file_two_array[x][y]:
-                        outFile.write(str(x) + ",")
-                        outFile.write(col + " (" + file_one_array[0][y] + "),")
-                        outFile.write(fileone[x])
-                        outFile.write(str(x) + ",")
-                        outFile.write(file_two_array[x][y] + " (" + file_one_array[0][y] + "),")
-                        outFile.write(filetwo[x] + "\n")
-                    y += 1
-            x += 1
-        """
+                                out_file.write(", COLUMN NOT PRESENT ")
+                        out_file.write("\n INPUT-2 ," + temp_id + ",")
+                        out_file.write(file_two_dictionary.get(temp_id).get(temp_column) + " (" + temp_column + ")")
+                        for col in total_columns:
+                            if file_two_columns_set.__contains__(col):
+                                out_file.write("," + file_two_dictionary.get(temp_id).get(col))
+                            else:
+                                out_file.write(", COLUMN NOT PRESENT ")
+                        out_file.write("\n")
+                out_file.write("\n")
+            elif file_one_id_set.__contains__(temp_id) and (not file_two_id_set.__contains__(temp_id)):
+                out_file.write(" INPUT-1 ,"+temp_id + ",")
+                out_file.write(" ENTRY PRESENT ")
+                for col in total_columns:
+                    if file_one_columns_set.__contains__(col):
+                        out_file.write("," + file_one_dictionary.get(temp_id).get(col))
+                    else:
+                        out_file.write(", COLUMN NOT PRESENT ")
+                out_file.write("\n INPUT-2 ," + temp_id + ",")
+                out_file.write(" ENTRY NOT PRESENT")
+                for col in total_columns:
+                    if file_two_columns_set.__contains__(col):
+                        out_file.write(", ENTRY NOT PRESENT")
+                    else:
+                        out_file.write(", COLUMN NOT PRESENT ")
+                out_file.write("\n\n")
+            elif (not file_one_id_set.__contains__(temp_id)) and file_two_id_set.__contains__(temp_id):
+                out_file.write(" INPUT-1 ,"+temp_id + ",")
+                out_file.write(" ENTRY NOT PRESENT ")
+                for col in total_columns:
+                    if file_one_columns_set.__contains__(col):
+                        out_file.write(", ENTRY NOT PRESENT")
+                    else:
+                        out_file.write(", COLUMN NOT PRESENT ")
+                out_file.write("\n INPUT-2 ," + temp_id + ",")
+                out_file.write(" ENTRY PRESENT")
+                for col in total_columns:
+                    if file_two_columns_set.__contains__(col):
+                        out_file.write("," + file_two_dictionary.get(temp_id).get(col))
+                    else:
+                        out_file.write(", COLUMN NOT PRESENT ")
+                out_file.write("\n\n")
 
         if len(filenames) == 2:
-            flash('Files compared successfully.\n The \'result\' & \'entries-not-present\' files are stored at \"' + app.config['FILES_FOLDER']+'\"')
+            flash('Files compared successfully.\n The \'result\' & \'entries-not-present\' files are stored at \"' +
+                  app.config['FILES_FOLDER'] + '\"')
             session['filenames'] = None
 
     else:
