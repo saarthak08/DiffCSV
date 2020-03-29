@@ -36,7 +36,7 @@ def download_file():
         return send_file(app.config['FILES_FOLDER'] + '/result.csv', attachment_filename='result.csv',
                          as_attachment=True, cache_timeout=0)
     except:
-        flash('result.csv file not found at ' + app.config['FILES_FOLDER'])
+        flash('\'result.csv\' file not found at ' + app.config['FILES_FOLDER'])
         return redirect('/')
 
 
@@ -237,12 +237,12 @@ def comp_file():
                 out_file.write("\n\n")
 
         if len(filenames) == 2:
-            flash('Files compared successfully.\n The \'result\' & \'entries-not-present\' files are stored at \"' +
-                  app.config['FILES_FOLDER'] + '\"')
+            flash('Files compared successfully.\n The \'result.csv\' file is stored at \"' +
+                  app.config['FILES_FOLDER'] + '\".')
             session['filenames'] = None
 
     else:
-        flash('Please upload the files first')
+        flash('Please upload the files first!')
         session['filenames'] = None
 
     return redirect('/')
