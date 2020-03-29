@@ -3,3 +3,8 @@
    
 ## Note:
    The files after calculation are stored in the `files` folder in the project directory.
+
+## Procedure:
+   - Install Flask (run `pip3 install Flask` in the terminal)
+   - Run `export FLASK_APP=main.py`'
+   - Run `flask run`
