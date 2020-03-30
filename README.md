@@ -12,7 +12,7 @@
    - Switch to `cli` branch and clone the repository.
    - Create a `files` folder in the project directory.
    - Inside `files` folder, create an `Inputs` folder.
-   - Place your two input files in `files/Inputs/` folder.
+   - Place your two input files in files/Inputs/ folder with first file name as input(1).csv and second file name as input(2).csv
    - Run `python cl_script.py`.
    - The output file will be stored at `files/Output` folder in the project directory.
    
