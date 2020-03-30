@@ -1,13 +1,14 @@
 import os
 import shutil
+import csv
 
-from app import app
-
-from flask import flash, request, redirect, render_template, session, send_file
+from flask import flash, request, redirect, render_template, session, send_file, Blueprint
 
 from werkzeug.utils import secure_filename
 
-import csv
+main_api = Blueprint('main_api', __name__)
+
+from app import app
 
 ALLOWED_EXTENSIONS = set(['csv'])
 
@@ -30,7 +31,7 @@ def compare_filenames(files):
     return files[0].rsplit('.', 1)[1].lower() == files[1].rsplit('.', 1)[1].lower()
 
 
-@app.route('/download', methods=['POST', 'GET'])
+@main_api.route('/download', methods=['POST', 'GET'])
 def download_file():
     try:
         return send_file(app.config['FILES_FOLDER'] + '/result.csv', attachment_filename='result.csv',
@@ -40,12 +41,12 @@ def download_file():
         return redirect('/')
 
 
-@app.route('/')
+@main_api.route('/')
 def upload_form():
     return render_template('upload.html')
 
 
-@app.route('/', methods=['POST'])
+@main_api.route('/', methods=['POST'])
 def upload_file():
     global filenames
 
@@ -94,7 +95,7 @@ def upload_file():
                 return redirect('/')
 
 
-@app.route('/compare', methods=['GET', 'POST'])
+@main_api.route('/compare', methods=['GET', 'POST'])
 def comp_file():
     os.chdir(app.config['FILES_FOLDER'])
     global filenames
@@ -129,6 +130,7 @@ def comp_file():
         file_one_columns_array = []
         file_two_columns_array = []
 
+        # Opened first input csv file
         with open(filenames[0]) as csv_one:
             csv_reader_one = csv.reader(csv_one)
             i = 0
@@ -136,8 +138,10 @@ def comp_file():
                 if i == 0:
                     for column in range(len(row)):
                         if column == 0:
+                            # Primary key for comparison
                             primary_index_one = row[column]
                         else:
+                            # Columns in first csv file stored in an array and set
                             file_one_columns_array.append(row[column])
                             file_one_columns_set.add(row[column])
                 else:
@@ -145,7 +149,7 @@ def comp_file():
                     temp_dict = {}
                     for column in range(len(row)):
                         if column != 0:
-                            temp_dict[file_one_columns_array[column-1]] = row[column]
+                            temp_dict[file_one_columns_array[column - 1]] = row[column]
                     file_one_dictionary[row[0]] = temp_dict
                 i += 1
 
@@ -177,7 +181,7 @@ def comp_file():
         total_ids_array = list(map(str, total_ids_array))
         columns_intersection = file_one_columns_set.intersection(file_two_columns_set)
 
-        out_file.write(" Input File ,"+"   "   + primary_index_one +   "   ,    Differences (COLUMN_NAME)    ")
+        out_file.write(" Input File ," + "   " + primary_index_one + "   ,    Differences (COLUMN_NAME)    ")
 
         for col in total_columns:
             out_file.write("," + col)
@@ -186,8 +190,9 @@ def comp_file():
         for temp_id in total_ids_array:
             if file_one_id_set.__contains__(temp_id) and file_two_id_set.__contains__(temp_id):
                 for temp_column in columns_intersection:
-                    if file_one_dictionary.get(temp_id).get(temp_column) != file_two_dictionary.get(temp_id).get(temp_column):
-                        out_file.write(" INPUT-1 ," +temp_id + ",")
+                    if file_one_dictionary.get(temp_id).get(temp_column) != file_two_dictionary.get(temp_id).get(
+                            temp_column):
+                        out_file.write(" INPUT-1 ," + temp_id + ",")
                         out_file.write(file_one_dictionary.get(temp_id).get(temp_column) + " (" + temp_column + ")")
                         for col in total_columns:
                             if file_one_columns_set.__contains__(col):
@@ -204,7 +209,7 @@ def comp_file():
                         out_file.write("\n")
                 out_file.write("\n")
             elif file_one_id_set.__contains__(temp_id) and (not file_two_id_set.__contains__(temp_id)):
-                out_file.write(" INPUT-1 ,"+temp_id + ",")
+                out_file.write(" INPUT-1 ," + temp_id + ",")
                 out_file.write(" ENTRY PRESENT ")
                 for col in total_columns:
                     if file_one_columns_set.__contains__(col):
@@ -220,7 +225,7 @@ def comp_file():
                         out_file.write(", COLUMN NOT PRESENT ")
                 out_file.write("\n\n")
             elif (not file_one_id_set.__contains__(temp_id)) and file_two_id_set.__contains__(temp_id):
-                out_file.write(" INPUT-1 ,"+temp_id + ",")
+                out_file.write(" INPUT-1 ," + temp_id + ",")
                 out_file.write(" ENTRY NOT PRESENT ")
                 for col in total_columns:
                     if file_one_columns_set.__contains__(col):
@@ -246,7 +251,3 @@ def comp_file():
         session['filenames'] = None
 
     return redirect('/')
-
-
-if __name__ == "__main__":
-    app.run(debug=True)

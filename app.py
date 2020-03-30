@@ -1,6 +1,8 @@
 import os
 import shutil
 
+from main import main_api
+
 from flask import Flask
 
 cwd = os.getcwd()
@@ -20,3 +22,8 @@ app.secret_key = "secret key"
 app.config['FILES_FOLDER'] = FILES_FOLDER
 
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
+
+app.register_blueprint(main_api)
+
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)
