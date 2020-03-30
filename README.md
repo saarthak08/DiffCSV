@@ -14,5 +14,5 @@
    - Inside `files` folder, create an `Inputs` folder.
    - Place your two input files in `files/Inputs/` folder.
    - Run `python cl_script.py`.
-   - The `result.csv` file will be stored at `files/Output` folder in the project directory.
+   - The output file will be stored at `files/Output` folder in the project directory.
    
