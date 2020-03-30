@@ -23,3 +23,5 @@ htmlcov/
 *,cover
 
 files
+
+cli_script.py
