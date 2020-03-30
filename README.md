@@ -6,5 +6,4 @@
 
 ## Procedure:
    - Install Flask (run `pip3 install Flask` in the terminal)
-   - Run `export FLASK_APP=main.py`'
    - Run `flask run`
