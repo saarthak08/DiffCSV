@@ -252,7 +252,7 @@ def main():
             out_file.write("\n\n")
 
     # Output done
-    print("Output done!")
+    print("Output done! The output file is stored at `files/Output` in the project directory.")
 
 
 if __name__ == "__main__":
