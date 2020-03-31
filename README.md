@@ -1,5 +1,5 @@
 # DiffCSV
-   A python project (flask based web app and command-line script) which takes two '.csv' files as input & produce output of the difference between them in a file named 'result.csv'.
+    A python project (flask based web app and command-line script) which takes two 'csv' files as input & produce the difference between them in an output 'csv' file.   
    
 
 ## Procedure (For Flask web app):
@@ -17,5 +17,5 @@
    - The output file will be stored at `files/Output` folder in the project directory.
    
 ## NOTE
-    - Differences are calculated by keeping the first column (index = 0) of each of the two input files as primary key. i.e. The value in the first column (index = 0) of the first input file is matched with the values of the first column (index = 0) of the second file and then, the differences between them is calculated.
-    - Primary key can be changed by changing primary key index in `config.py` file. Default value is set to 0.
+   - Differences are calculated by keeping the first column (index = 0) of each of the two input files as primary key. i.e. The value in the first column (index = 0) of the first input file is matched with the values of the first column (index = 0) of the second file and then, the differences between them is calculated.
+   - Primary key can be changed by changing primary key index in `config.py` file. Default value is set to 0.

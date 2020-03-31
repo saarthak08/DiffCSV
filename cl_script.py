@@ -141,6 +141,9 @@ def main():
         print("Error! `input(2).csv` not present in `" + INPUT_FOLDER + "` in folder in the project directory.")
         exit(0)
 
+    csv_one.close()
+    csv_two.close()
+
     # Total columns = Union( 'Columns of input(1)' & 'Column of input(2)' )
     total_columns = file_one_columns_set.union(file_two_columns_set)
 
