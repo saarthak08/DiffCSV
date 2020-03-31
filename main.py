@@ -18,6 +18,7 @@ cnp = "COLUMN NOT PRESENT"
 enp = "ENTRY NOT PRESENT"
 ep = "ENTRY PRESENT"
 
+
 def recreate_dir():
     if os.path.exists(app.config['FILES_FOLDER']):
         shutil.rmtree(app.config['FILES_FOLDER'])
@@ -238,7 +239,7 @@ def comp_file():
         columns_intersection = file_one_columns_set.intersection(file_two_columns_set)
 
         # Opening output result file
-        out_file = open('result.'+filenames[0].rsplit('.', 1)[1].lower(), 'w')
+        out_file = open('result.' + filenames[0].rsplit('.', 1)[1].lower(), 'w')
 
         # Adding the `Input File` and `Differences` columns
         out_file.write(" Input File ," + "   " + primary_index_one + "   ,    Differences (COLUMN_NAME)    ")
