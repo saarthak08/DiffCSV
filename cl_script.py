@@ -1,9 +1,11 @@
 import os
 import fileinput
 import csv
+from config import filenames, INPUT_FOLDER, OUTPUT_FOLDER, PRIMARY_INDEX_FIRST, PRIMARY_INDEX_SECOND
 
-# Filenames with path
-filenames = ["files/Inputs/input(1).csv", "files/Inputs/input(2).csv", "files/Output/Diff_01_02.csv"]
+cnp = "COLUMN NOT PRESENT"
+enp = "ENTRY NOT PRESENT"
+ep = "ENTRY PRESENT"
 
 
 def create_dir():
@@ -11,20 +13,14 @@ def create_dir():
     cwd = os.getcwd()
 
     # Initialising folders
-    files_folder = os.path.join(cwd, 'files')
-    input_folder = os.path.join(files_folder, 'Inputs')
-    output_folder = os.path.join(files_folder, 'Output')
+    input_folder = os.path.join(cwd, INPUT_FOLDER)
+    output_folder = os.path.join(cwd, OUTPUT_FOLDER)
 
     # If directories don't exist, create them
-    if not os.path.exists(files_folder):
-        os.mkdir(files_folder)
-        os.mkdir(input_folder)
-        os.mkdir(output_folder)
-    else:
-        if not os.path.exists(input_folder):
-            os.mkdir(input_folder)
-        if not os.path.exists(output_folder):
-            os.mkdir(output_folder)
+    if not os.path.exists(input_folder):
+        os.makedirs(input_folder)
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
 
 
 def main():
@@ -57,6 +53,12 @@ def main():
     # Declaring the column name of primary key of input file 2
     primary_index_two = ""
 
+    # Primary key column number in input file 1
+    primary_index_first = PRIMARY_INDEX_FIRST
+
+    # Primary key column number in input file 2
+    primary_index_second = PRIMARY_INDEX_SECOND
+
     # Declaring the array of columns of each input file
     file_one_columns_array = []
     file_two_columns_array = []
@@ -74,7 +76,7 @@ def main():
                     # Reading each column of row
                     for column in range(len(row)):
                         # Checking for primary key column name
-                        if column == 0:
+                        if column == primary_index_first:
                             # Adding primary key for comparison
                             primary_index_one = row[column]
                         else:
@@ -84,20 +86,20 @@ def main():
                 # Condition if row isn't the first one (i.e. entry rows)
                 else:
                     # id (primary key) added to id set of first input file
-                    file_one_id_set.add(row[0])
+                    file_one_id_set.add(row[primary_index_first])
                     # initialised a temporary dictionary
                     temp_dict = {}
                     # Reading each column of row
                     for column in range(len(row)):
                         # Checking if the column is not the id column
-                        if column != 0:
+                        if column != primary_index_first:
                             # Adding the entries to the temporary dictionary where key is the column name and value is the value of the column
                             temp_dict[file_one_columns_array[column - 1]] = row[column]
                     # Adding the temporary dictionary to the dictionary of file one as nested dictionary where key is the value of id and value is the temporary dictionary
-                    file_one_dictionary[row[0]] = temp_dict
+                    file_one_dictionary[row[primary_index_first]] = temp_dict
                 i += 1
     except FileNotFoundError:
-        print("Error! `input(1).csv` not present in `files/Inputs` in folder in the project directory.")
+        print("Error! `input(1).csv` not present in `" + INPUT_FOLDER + "` in folder in the project directory.")
         exit(0)
 
     try:
@@ -113,7 +115,7 @@ def main():
                     # Reading each column of row
                     for column in range(len(row)):
                         # Checking for primary key column name
-                        if column == 0:
+                        if column == primary_index_second:
                             # Adding primary key for comparison
                             primary_index_two = row[column]
                         else:
@@ -123,20 +125,20 @@ def main():
                 # Condition if row isn't the first one (i.e. entry rows)
                 else:
                     # id (primary key) added to id set of second input file
-                    file_two_id_set.add(row[0])
+                    file_two_id_set.add(row[primary_index_second])
                     # initialised a temporary dictionary
                     temp_dict = {}
                     # Reading each column of row
                     for column in range(len(row)):
                         # Checking if the column is not the id column
-                        if column != 0:
+                        if column != primary_index_second:
                             # Adding the entries to the temporary dictionary where key is the column name and value is the value of the column
                             temp_dict[file_two_columns_array[column - 1]] = row[column]
                     # Adding the temporary dictionary to the dictionary of file two as nested dictionary where key is the value of id and value is the temporary dictionary
-                    file_two_dictionary[row[0]] = temp_dict
+                    file_two_dictionary[row[primary_index_second]] = temp_dict
                 i += 1
     except FileNotFoundError:
-        print("Error! `input(2).csv` not present in `files/Inputs` in folder in the project directory.")
+        print("Error! `input(2).csv` not present in `" + INPUT_FOLDER + "` in folder in the project directory.")
         exit(0)
 
     # Total columns = Union( 'Columns of input(1)' & 'Column of input(2)' )
@@ -189,7 +191,7 @@ def main():
                         if file_one_columns_set.__contains__(col):
                             out_file.write("," + file_one_dictionary.get(temp_id).get(col))
                         else:
-                            out_file.write(", COLUMN NOT PRESENT ")
+                            out_file.write("," + cnp)
                     # Write the differences
                     out_file.write("\n INPUT-2 ," + temp_id + ",")
                     out_file.write(file_two_dictionary.get(temp_id).get(temp_column) + " (" + temp_column + ")")
@@ -199,7 +201,7 @@ def main():
                         if file_two_columns_set.__contains__(col):
                             out_file.write("," + file_two_dictionary.get(temp_id).get(col))
                         else:
-                            out_file.write(", COLUMN NOT PRESENT ")
+                            out_file.write("," + cnp)
                     out_file.write("\n")
             out_file.write("\n")
 
@@ -207,52 +209,52 @@ def main():
         elif file_one_id_set.__contains__(temp_id) and (not file_two_id_set.__contains__(temp_id)):
             # Write the differences
             out_file.write(" INPUT-1 ," + temp_id + ",")
-            out_file.write(" ENTRY PRESENT ")
+            out_file.write(ep)
             # Iterating each column in all columns to write each value of the column
             for col in total_columns:
                 # Checking if the column is present in first input file
                 if file_one_columns_set.__contains__(col):
                     out_file.write("," + file_one_dictionary.get(temp_id).get(col))
                 else:
-                    out_file.write(", COLUMN NOT PRESENT ")
+                    out_file.write("," + cnp)
             # Write the differences
             out_file.write("\n INPUT-2 ," + temp_id + ",")
-            out_file.write(" ENTRY NOT PRESENT")
+            out_file.write(enp)
             # Iterating each column in all columns to write each value of the column
             for col in total_columns:
                 # Checking if the column is present in second input file
                 if file_two_columns_set.__contains__(col):
-                    out_file.write(", ENTRY NOT PRESENT")
+                    out_file.write("," + enp)
                 else:
-                    out_file.write(", COLUMN NOT PRESENT ")
+                    out_file.write("," + cnp)
             out_file.write("\n\n")
 
         # If the id is not present in first input file and present in second input file
         elif (not file_one_id_set.__contains__(temp_id)) and file_two_id_set.__contains__(temp_id):
             # Write the differences
             out_file.write(" INPUT-1 ," + temp_id + ",")
-            out_file.write(" ENTRY NOT PRESENT ")
+            out_file.write(enp)
             # Iterating each column in all columns to write each value of the column
             for col in total_columns:
                 # Checking if the column is present in first input file
                 if file_one_columns_set.__contains__(col):
-                    out_file.write(", ENTRY NOT PRESENT")
+                    out_file.write("," + enp)
                 else:
-                    out_file.write(", COLUMN NOT PRESENT ")
+                    out_file.write("," + cnp)
             # Write the differences
             out_file.write("\n INPUT-2 ," + temp_id + ",")
-            out_file.write(" ENTRY PRESENT")
+            out_file.write(ep)
             # Iterating each column in all columns to write each value of the column
             for col in total_columns:
                 # Checking if the column is present in second input file
                 if file_two_columns_set.__contains__(col):
                     out_file.write("," + file_two_dictionary.get(temp_id).get(col))
                 else:
-                    out_file.write(", COLUMN NOT PRESENT ")
+                    out_file.write("," + cnp)
             out_file.write("\n\n")
 
     # Output done
-    print("Output done! The output file is stored at `files/Output` in the project directory.")
+    print("Output done! The output file is stored at `" + OUTPUT_FOLDER + "` in the project directory.")
 
 
 if __name__ == "__main__":

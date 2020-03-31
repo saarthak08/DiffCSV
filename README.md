@@ -16,3 +16,6 @@
    - Run `python cl_script.py`.
    - The output file will be stored at `files/Output` folder in the project directory.
    
+## NOTE
+    - Differences are calculated by keeping the first column (index = 0) of each of the two input files as primary key. i.e. The value in the first column (index = 0) of the first input file is matched with the values of the first column (index = 0) of the second file and then, the differences between them is calculated.
+    - Primary key can be changed by changing primary key index in `config.py` file. Default value is set to 0.
