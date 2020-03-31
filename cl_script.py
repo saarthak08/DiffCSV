@@ -3,9 +3,11 @@ import fileinput
 import csv
 from config import filenames, INPUT_FOLDER, OUTPUT_FOLDER, PRIMARY_INDEX_FIRST, PRIMARY_INDEX_SECOND
 
-cnp = "COLUMN NOT PRESENT"
-enp = "ENTRY NOT PRESENT"
-ep = "ENTRY PRESENT"
+# Differences
+cnp = " Column Not Present "
+np = " Entry Not Present "
+nm = " Not Matching : "
+m = " Matching "
 
 
 def create_dir():
@@ -141,6 +143,7 @@ def main():
         print("Error! `input(2).csv` not present in `" + INPUT_FOLDER + "` in folder in the project directory.")
         exit(0)
 
+    # Closing the csv files
     csv_one.close()
     csv_two.close()
 
@@ -162,99 +165,104 @@ def main():
     # Opening output result file
     out_file = open(filenames[2], 'w')
 
-    # Adding the `Input File` and `Differences` columns
-    out_file.write(" Input File ," + "   " + primary_index_one + "   ,    Differences (COLUMN_NAME)    ")
+    out_file.write(primary_index_one)
 
     # Writing all the heading columns or columns name in the output file
     for col in total_columns:
         out_file.write("," + col)
 
     out_file.write("\n")
+
     # Iterating each id from total ids
     for temp_id in total_ids_array:
+
+        out_file.write(temp_id)
 
         # If the id in both files input-1 and input-2
         if file_one_id_set.__contains__(temp_id) and file_two_id_set.__contains__(temp_id):
 
-            # Checking the common columns in both the files for each id
-            for temp_column in columns_intersection:
+            # Checking the total columns in both the files for each id
+            for temp_column in total_columns:
 
-                # If the values of the column do not match
-                if file_one_dictionary.get(temp_id).get(temp_column) != file_two_dictionary.get(temp_id).get(
+                # If both files contain the column
+                if file_one_columns_set.__contains__(temp_column) and file_two_columns_set.__contains__(temp_column):
+
+                    # If the values of the column do not match
+                    if file_one_dictionary.get(temp_id).get(temp_column) != file_two_dictionary.get(temp_id).get(
+                            temp_column):
+
+                        out_file.write("," + nm + file_one_dictionary.get(temp_id).get(temp_column) + " - " + file_two_dictionary.get(
+                                temp_id).get(temp_column))
+
+                    # If the values of the column match
+                    elif file_one_dictionary.get(temp_id).get(temp_column) == file_two_dictionary.get(temp_id).get(
+                            temp_column):
+
+                        out_file.write("," + m)
+
+                # If first input file contains the column but second doesn't
+                elif file_one_columns_set.__contains__(temp_column) and not file_two_columns_set.__contains__(
                         temp_column):
 
-                    # Write the differences
-                    out_file.write(" INPUT-1 ," + temp_id + ",")
-                    out_file.write(file_one_dictionary.get(temp_id).get(temp_column) + " (" + temp_column + ")")
+                    out_file.write("," + "Input(2)" + cnp)
 
-                    # Iterating each column in all columns to write each value of the column
-                    for col in total_columns:
+                # If first input file doesn't contain the column but second contains the column
+                elif not file_one_columns_set.__contains__(temp_column) and file_two_columns_set.__contains__(
+                        temp_column):
 
-                        # Checking if the column is present in first input file
-                        if file_one_columns_set.__contains__(col):
-                            out_file.write("," + file_one_dictionary.get(temp_id).get(col))
-                        else:
-                            out_file.write("," + cnp)
-                    # Write the differences
-                    out_file.write("\n INPUT-2 ," + temp_id + ",")
-                    out_file.write(file_two_dictionary.get(temp_id).get(temp_column) + " (" + temp_column + ")")
-                    # Iterating each column in all columns to write each value of the column
-                    for col in total_columns:
-                        # Checking if the column is present in second input file
-                        if file_two_columns_set.__contains__(col):
-                            out_file.write("," + file_two_dictionary.get(temp_id).get(col))
-                        else:
-                            out_file.write("," + cnp)
-                    out_file.write("\n")
+                    out_file.write("," + "Input(1)" + cnp)
+
             out_file.write("\n")
 
         # If the id is present in first input file and not present in second input file
         elif file_one_id_set.__contains__(temp_id) and (not file_two_id_set.__contains__(temp_id)):
-            # Write the differences
-            out_file.write(" INPUT-1 ," + temp_id + ",")
-            out_file.write(ep)
-            # Iterating each column in all columns to write each value of the column
-            for col in total_columns:
-                # Checking if the column is present in first input file
-                if file_one_columns_set.__contains__(col):
-                    out_file.write("," + file_one_dictionary.get(temp_id).get(col))
-                else:
-                    out_file.write("," + cnp)
-            # Write the differences
-            out_file.write("\n INPUT-2 ," + temp_id + ",")
-            out_file.write(enp)
-            # Iterating each column in all columns to write each value of the column
-            for col in total_columns:
-                # Checking if the column is present in second input file
-                if file_two_columns_set.__contains__(col):
-                    out_file.write("," + enp)
-                else:
-                    out_file.write("," + cnp)
-            out_file.write("\n\n")
+
+            for temp_column in total_columns:
+
+                # If both files contain the column
+                if file_one_columns_set.__contains__(temp_column) and file_two_columns_set.__contains__(temp_column):
+
+                    out_file.write("," + "Input(2)" + np)
+
+                # If first input file contains the column but second doesn't
+                elif file_one_columns_set.__contains__(temp_column) and not file_two_columns_set.__contains__(
+                        temp_column):
+
+                    out_file.write("," + "Input(2)" + cnp + ": Input(2)" + np)
+
+                # If first input file doesn't contain the column but second contains the column
+                elif not file_one_columns_set.__contains__(temp_column) and file_two_columns_set.__contains__(
+                        temp_column):
+
+                    out_file.write("," + "Input(1)" + cnp + ": Input(2)" + np)
+
+            out_file.write("\n")
 
         # If the id is not present in first input file and present in second input file
         elif (not file_one_id_set.__contains__(temp_id)) and file_two_id_set.__contains__(temp_id):
-            # Write the differences
-            out_file.write(" INPUT-1 ," + temp_id + ",")
-            out_file.write(enp)
-            # Iterating each column in all columns to write each value of the column
-            for col in total_columns:
-                # Checking if the column is present in first input file
-                if file_one_columns_set.__contains__(col):
-                    out_file.write("," + enp)
-                else:
-                    out_file.write("," + cnp)
-            # Write the differences
-            out_file.write("\n INPUT-2 ," + temp_id + ",")
-            out_file.write(ep)
-            # Iterating each column in all columns to write each value of the column
-            for col in total_columns:
-                # Checking if the column is present in second input file
-                if file_two_columns_set.__contains__(col):
-                    out_file.write("," + file_two_dictionary.get(temp_id).get(col))
-                else:
-                    out_file.write("," + cnp)
-            out_file.write("\n\n")
+            for temp_column in total_columns:
+
+                # If both files contain the column
+                if file_one_columns_set.__contains__(temp_column) and file_two_columns_set.__contains__(temp_column):
+
+                    out_file.write("," + "Input(1)" + np)
+
+                # If first input file contains the column but second doesn't
+                elif file_one_columns_set.__contains__(temp_column) and not file_two_columns_set.__contains__(
+                        temp_column):
+
+                    out_file.write("," + "Input(2)" + cnp + ": Input(1)" + np)
+
+                # If first input file doesn't contain the column but second contains the column
+                elif not file_one_columns_set.__contains__(temp_column) and file_two_columns_set.__contains__(
+                        temp_column):
+
+                    out_file.write("," + "Input(1)" + cnp + ": Input(1)" + np)
+
+            out_file.write("\n")
+
+    # Closing the output file
+    out_file.close()
 
     # Output done
     print("Output done! The output file is stored at `" + OUTPUT_FOLDER + "` in the project directory.")
