@@ -223,6 +223,9 @@ def comp_file():
             flash("Error! `input(2)` not present in the upload directory.")
             exit(0)
 
+        csv_one.close()
+        csv_two.close()
+
         # Total columns = Union( 'Columns of input(1)' & 'Column of input(2)' )
         total_columns = file_one_columns_set.union(file_two_columns_set)
 
