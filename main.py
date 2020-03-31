@@ -14,6 +14,9 @@ ALLOWED_EXTENSIONS = set(['csv'])
 
 filenames = []
 
+cnp = "COLUMN NOT PRESENT"
+enp = "ENTRY NOT PRESENT"
+ep = "ENTRY PRESENT"
 
 def recreate_dir():
     if os.path.exists(app.config['FILES_FOLDER']):
@@ -129,6 +132,12 @@ def comp_file():
         # Declaring the column name of primary key of input file 2
         primary_index_two = ""
 
+        # Primary key column number in input file 1
+        primary_index_first = app.config["PRIMARY_KEY_FIRST"]
+
+        # Primary key column number in input file 2
+        primary_index_second = app.config["PRIMARY_KEY_SECOND"]
+
         # Declaring the array of columns of each input file
         file_one_columns_array = []
         file_two_columns_array = []
@@ -146,7 +155,7 @@ def comp_file():
                         # Reading each column of row
                         for column in range(len(row)):
                             # Checking for primary key column name
-                            if column == 0:
+                            if column == primary_index_first:
                                 # Adding primary key for comparison
                                 primary_index_one = row[column]
                             else:
@@ -156,22 +165,22 @@ def comp_file():
                     # Condition if row isn't the first one (i.e. entry rows)
                     else:
                         # id (primary key) added to id set of first input file
-                        file_one_id_set.add(row[0])
+                        file_one_id_set.add(row[primary_index_first])
                         # initialised a temporary dictionary
                         temp_dict = {}
                         # Reading each column of row
                         for column in range(len(row)):
                             # Checking if the column is not the id column
-                            if column != 0:
+                            if column != primary_index_first:
                                 # Adding the entries to the temporary dictionary where key is the column name and value is the value of the column
                                 temp_dict[file_one_columns_array[column - 1]] = row[column]
                         # Adding the temporary dictionary to the dictionary of file one as nested dictionary where key is the value of id and value is the temporary dictionary
-                        file_one_dictionary[row[0]] = temp_dict
+                        file_one_dictionary[row[primary_index_first]] = temp_dict
                     i += 1
         except FileNotFoundError:
             print("Error! `input(1)` not present in the upload directory.")
             flash("Error! `input(1)` not present in the upload directory")
-            return redirect('/')
+            exit(0)
 
         try:
             # Opened second input csv file
@@ -186,7 +195,7 @@ def comp_file():
                         # Reading each column of row
                         for column in range(len(row)):
                             # Checking for primary key column name
-                            if column == 0:
+                            if column == primary_index_second:
                                 # Adding primary key for comparison
                                 primary_index_two = row[column]
                             else:
@@ -196,22 +205,22 @@ def comp_file():
                     # Condition if row isn't the first one (i.e. entry rows)
                     else:
                         # id (primary key) added to id set of second input file
-                        file_two_id_set.add(row[0])
+                        file_two_id_set.add(row[primary_index_second])
                         # initialised a temporary dictionary
                         temp_dict = {}
                         # Reading each column of row
                         for column in range(len(row)):
                             # Checking if the column is not the id column
-                            if column != 0:
+                            if column != primary_index_second:
                                 # Adding the entries to the temporary dictionary where key is the column name and value is the value of the column
                                 temp_dict[file_two_columns_array[column - 1]] = row[column]
                         # Adding the temporary dictionary to the dictionary of file two as nested dictionary where key is the value of id and value is the temporary dictionary
-                        file_two_dictionary[row[0]] = temp_dict
+                        file_two_dictionary[row[primary_index_second]] = temp_dict
                     i += 1
         except FileNotFoundError:
             print("Error! `input(2)` not present in the upload directory.")
             flash("Error! `input(2)` not present in the upload directory.")
-            return redirect('/')
+            exit(0)
 
         # Total columns = Union( 'Columns of input(1)' & 'Column of input(2)' )
         total_columns = file_one_columns_set.union(file_two_columns_set)
@@ -263,7 +272,7 @@ def comp_file():
                             if file_one_columns_set.__contains__(col):
                                 out_file.write("," + file_one_dictionary.get(temp_id).get(col))
                             else:
-                                out_file.write(", COLUMN NOT PRESENT ")
+                                out_file.write("," + cnp)
                         # Write the differences
                         out_file.write("\n INPUT-2 ," + temp_id + ",")
                         out_file.write(file_two_dictionary.get(temp_id).get(temp_column) + " (" + temp_column + ")")
@@ -273,7 +282,7 @@ def comp_file():
                             if file_two_columns_set.__contains__(col):
                                 out_file.write("," + file_two_dictionary.get(temp_id).get(col))
                             else:
-                                out_file.write(", COLUMN NOT PRESENT ")
+                                out_file.write("," + cnp)
                         out_file.write("\n")
                 out_file.write("\n")
 
@@ -281,48 +290,48 @@ def comp_file():
             elif file_one_id_set.__contains__(temp_id) and (not file_two_id_set.__contains__(temp_id)):
                 # Write the differences
                 out_file.write(" INPUT-1 ," + temp_id + ",")
-                out_file.write(" ENTRY PRESENT ")
+                out_file.write(ep)
                 # Iterating each column in all columns to write each value of the column
                 for col in total_columns:
                     # Checking if the column is present in first input file
                     if file_one_columns_set.__contains__(col):
                         out_file.write("," + file_one_dictionary.get(temp_id).get(col))
                     else:
-                        out_file.write(", COLUMN NOT PRESENT ")
+                        out_file.write("," + cnp)
                 # Write the differences
                 out_file.write("\n INPUT-2 ," + temp_id + ",")
-                out_file.write(" ENTRY NOT PRESENT")
+                out_file.write(enp)
                 # Iterating each column in all columns to write each value of the column
                 for col in total_columns:
                     # Checking if the column is present in second input file
                     if file_two_columns_set.__contains__(col):
-                        out_file.write(", ENTRY NOT PRESENT")
+                        out_file.write("," + enp)
                     else:
-                        out_file.write(", COLUMN NOT PRESENT ")
+                        out_file.write("," + cnp)
                 out_file.write("\n\n")
 
             # If the id is not present in first input file and present in second input file
             elif (not file_one_id_set.__contains__(temp_id)) and file_two_id_set.__contains__(temp_id):
                 # Write the differences
                 out_file.write(" INPUT-1 ," + temp_id + ",")
-                out_file.write(" ENTRY NOT PRESENT ")
+                out_file.write(enp)
                 # Iterating each column in all columns to write each value of the column
                 for col in total_columns:
                     # Checking if the column is present in first input file
                     if file_one_columns_set.__contains__(col):
-                        out_file.write(", ENTRY NOT PRESENT")
+                        out_file.write("," + enp)
                     else:
-                        out_file.write(", COLUMN NOT PRESENT ")
+                        out_file.write("," + cnp)
                 # Write the differences
                 out_file.write("\n INPUT-2 ," + temp_id + ",")
-                out_file.write(" ENTRY PRESENT")
+                out_file.write(ep)
                 # Iterating each column in all columns to write each value of the column
                 for col in total_columns:
                     # Checking if the column is present in second input file
                     if file_two_columns_set.__contains__(col):
                         out_file.write("," + file_two_dictionary.get(temp_id).get(col))
                     else:
-                        out_file.write(", COLUMN NOT PRESENT ")
+                        out_file.write("," + cnp)
                 out_file.write("\n\n")
 
         if len(filenames) == 2:

@@ -24,4 +24,5 @@ htmlcov/
 
 files
 
+config.py
 cli_script.py
