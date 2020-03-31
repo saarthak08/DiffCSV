@@ -223,6 +223,7 @@ def comp_file():
             flash("Error! `input(2)` not present in the upload directory.")
             exit(0)
 
+        # Closing the csv files
         csv_one.close()
         csv_two.close()
 
@@ -337,6 +338,9 @@ def comp_file():
                     else:
                         out_file.write("," + cnp)
                 out_file.write("\n\n")
+
+        # Closing the output file
+        out_file.close()
 
         if len(filenames) == 2:
             flash('Files compared successfully.\n The \'result.csv\' file is stored at \"' +
